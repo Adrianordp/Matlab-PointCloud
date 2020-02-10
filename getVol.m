@@ -1,6 +1,6 @@
 clear;close all;clc
 % cloud_raw = load('Pilha1_Raw.asc');
-cloud_raw = load('Pilha1_Raw.asc');
+cloud_raw = load('Cilindrao2.asc');
 % cloud_raw = load('Pilha33_Raw.asc'); %MAIOR
 % cloud_raw1 = load('Pilha32_Raw.asc'); %SEGUNDA MAIOR
 % cloud_raw2 = load('Pilha31_Raw.asc'); %MENOR
@@ -8,7 +8,8 @@ cloud_raw = load('Pilha1_Raw.asc');
 
 cloud = cloud_raw(:,1:3); %pega s pontos
 
-% pcshow(cloud); 
+pcshow(cloud);
+figure
 % pcshow(cloud_raw1(:,1:3)); 
 % pcshow(cloud_raw2(:,1:3)); 
 xlabel('X');
@@ -30,11 +31,11 @@ ylabel('Y');
 %% SMART MODE -> Projeção de toda a nuvem sobre plano (x,y)! 
 % ai eh top
 %%
-densities = [0.01];
+densities = [0.2];
 for density=densities
 Cloud_floored = makeFloor(cloud,density);
 %% Varios Volumes
-alphas = [0.1 0.5 1 2 3 4 5 10 15];
+alphas = [0.05 0.1 0.15 0.3 0.5 1 10];
 V = zeros(length(alphas),1);
 i = 1;
 for alpha=alphas
@@ -52,6 +53,7 @@ figure
 plot(shape)
 xlabel('X [m]')
 ylabel('Y [m]')
+zlabel('Z [m]')
 disp(V)
 end
 
