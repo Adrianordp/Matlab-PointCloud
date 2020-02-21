@@ -24,6 +24,22 @@ R = [cos(angle) sin(angle) 0;-sin(angle) cos(angle) 0;0 0 1];
 
 %%  Rotate
 xyz_rotated = (R*xyz')'; %pequena melhorada
+
+% KD = KDTreeSearcher(xyz_rotated,'distance','euclidean');
+KD = KDTreeSearcher(xyz_rotated,'distance','minkowski','P',8);
+
+Y = xyz_rotated(1,:); %pnto de prova
+
+% knnsearch(KD,Y) %pega o mais próximo
+% knnsearch(KD,Y,'K',20) %pega K mais próximos
+
+r = 2;
+IDX = rangesearch(KD,Y,r) %pega os mais próximos de raio r
+
+
+return
+
+
 % save('pilha_rotated.txt','xyz_rotated','-ASCII')
 
 %% Faz Grid
@@ -54,6 +70,9 @@ M_ = flipud(M)
 
 total_ums = sum(M(:));
 preenchimento = total_ums / (n_cells);
+
+%% KD Tree test
+
 
 
 
