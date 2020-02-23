@@ -23,6 +23,11 @@ angle = atan(a);
 angle = 0;
 R = [cos(angle) sin(angle) 0;-sin(angle) cos(angle) 0;0 0 1];
 xyz_rotated = (R*xyz')'; %pequena melhorada
+<<<<<<< HEAD
+=======
+% save('pilha_rotated.txt','xyz_rotated','-ASCII')
+
+>>>>>>> parent of aa2b53a... falta implementar KDTREE!
 %% Faz Grid
 X = xyz_rotated(:,1);
 Y = xyz_rotated(:,2);
@@ -58,9 +63,6 @@ plot(X,Y,'.')
 
 total_ums = sum(M(:));
 preenchimento = total_ums / (n_cells)
-
-%% KD Tree test
-
 
 
 
