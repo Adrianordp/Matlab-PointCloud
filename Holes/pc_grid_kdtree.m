@@ -40,29 +40,35 @@ else
     dcell = dy;
 end
 
-width = ceil(dcell/res);
-heigth = ceil(dcell/res);
+cell_length = ceil(dcell/res);
 
 
 % Mesh
-xcells = linspace(min(X),max(X),width);
-ycells = linspace(min(Y),max(Y),heigth);
+xcells = min(X):cell_length:max(X)
+ycells = min(Y):cell_length:max(Y)
+
 %Nossa grid foi definida agora.
 nx = length(xcells);
 ny = length(ycells);
 
 ncells = (nx-1) * (ny-1);
 plotgrid(xcells,ycells)
+
 %% separa pontos de query da nuvem
 % serão n_cells procuras
 % pega pontos medios
 xmed = zeros(1,nx-1);
 ymed = xmed;
-for i=1:length(xcells)-1
-   xmed(i) = (xcells(i)+xcells(i+1))/2;
-   ymed(i) = (ycells(i)+ycells(i+1))/2;
-    
+for i=1:nx-1
+   xmed(i) = (xcells(i)+xcells(i+1))/2;    
 end
+
+for i=1:ny-1
+   ymed(i) = (ycells(i)+ycells(i+1))/2;    
+end
+
+
+
 qpoints = [];
 for i=1:nx-1
     for k=1:ny-1
@@ -79,13 +85,11 @@ plot(qpoints(:,1),qpoints(:,2),'.');
 KD = KDTreeSearcher(xy_rotated,'BucketSize',10,'distance','chebychev');
 
 
-p=qpoints(end/2-3,:)
+p=qpoints(3,:)
 
-r = 10; %raio ~ quadrado de lado 20!
+r = (cell_length/2)*0.95; %raio ~ quadrado de lado 20!
 IDX = rangesearch(KD,p,r); %pega os mais próximos de raio r
 idxs = IDX{1};
-
-
 
 %% Plots
 x_range = xyz_rotated([idxs],1);
