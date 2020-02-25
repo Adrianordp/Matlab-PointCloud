@@ -44,49 +44,36 @@ min_y = floor(min(Y)) - inflation_factor;
 %largura e altura do grid
 dx = max_x - min_x;
 dy = max_y - min_y;
+%% Problema = encontrar menor quadado que contenha o retangulo dx,dy
+% centro do quadrado ?
+x_sq = (max_x + min_x) / 2;
+y_sq = (max_y + min_y) / 2;
 
-% na verdade, nao precisamos fatiar exatamente as dimensões da pilha. pode
-% ser algo mais 'comportado', ou 'quadrado'.
-
-% bolar um algoritmo para que gcd(dx,dy) seja maximizado. o GCD é o tamanho máximo
-% da célula. quato maior, melhor
-
-% encontarando máximo multiplo da menor dimensão mais próximo da maior
-% dimensão
-if (dx > dy)
-    minor_dim = dy;
-    minor_vec = Y;
-    major_dim = dx;
-    major_vec = X;
-else
-    minor_dim = dx; 
-    minor_vec = X;
-    major_dim = dy;
-    major_vec = Y;
+m_factor = 1;
+mult_factor = m_factor*dy;
+while (mult_factor < dx)
+   m_factor = m_factor+1;
+   mult_factor = m_factor*dy;
 end
+err = mult_factor - dx
+new_dx = mult_factor
+new_dy = dy
 
-minor_multiple = minor_dim;
-factor = 1;
-while (minor_multiple < major_dim)
-    factor = factor+1;
-    minor_multiple = minor_multiple*factor;
-end
-err = minor_multiple - major_dim;
-%recalcula dx
-% testar 
-min_x_corrected = min_x - err/2;
-max_x_corrected = max_x + err/2;
-new_dx = max_x_corrected - min_x_corrected
-
-g_div = gcd(new_dx,dy)
+%precisa ser td inteiro
+min_x_sq = x_sq - new_dx/2
+max_x_sq = x_sq + new_dx/2
+min_y_sq = y_sq - new_dy/2
+max_y_sq = y_sq + new_dy/2
 % return
-division_factor = 0.1; % 0 < div_factor <= 1
+%%
+g_div = gcd(new_dx,new_dy)
+division_factor = 1/94; % 0 < div_factor <= 1
 cell_length = g_div*division_factor;
 fprintf('Res = %d m\n',cell_length);
 
-% Mesh
-xcells = min_x_corrected:cell_length:max_x_corrected;
-ycells = min_y:cell_length:max_y;
+% Mesh do 
+xcells = min_x_sq:cell_length:max_x_sq;
+ycells = min_y_sq:cell_length:max_y_sq;
 
 %Nossa grid foi definida agora.
 nx = length(xcells);
@@ -98,7 +85,7 @@ x_all = xyz_rotated(:,1);
 y_all = xyz_rotated(:,2);
 plotgrid(xcells,ycells);
 plot(x_all,y_all,'.');hold on;
-return
+% return
 %% separa pontos de query da nuvem
 % serão n_cells procuras
 % pega pontos medios
@@ -148,8 +135,8 @@ end
 x_range = xyz_rotated([IDX],1);
 y_range = xyz_rotated([IDX],2);
 
-plot(x_range,y_range,'g.')
-drawnow
+% plot(x_range,y_range,'g.')
+% drawnow
 % pause(.1)
 end
 total_ums = sum(M(:))
