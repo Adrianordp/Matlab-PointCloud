@@ -67,7 +67,7 @@ max_y_sq = y_sq + new_dy/2
 % return
 %%
 g_div = gcd(new_dx,new_dy)
-division_factor = 1/94; % 0 < div_factor <= 1
+division_factor = 2^(-7); % 0 < div_factor <= 1
 cell_length = g_div*division_factor;
 fprintf('Res = %d m\n',cell_length);
 
@@ -135,8 +135,8 @@ end
 x_range = xyz_rotated([IDX],1);
 y_range = xyz_rotated([IDX],2);
 
-% plot(x_range,y_range,'g.')
-% drawnow
+plot(x_range,y_range,'g.')
+drawnow
 % pause(.1)
 end
 total_ums = sum(M(:))
