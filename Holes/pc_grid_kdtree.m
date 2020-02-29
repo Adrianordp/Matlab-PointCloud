@@ -1,3 +1,8 @@
+%% TODO
+% 1) - A nuvem precisa ser cortada sob um mesmo polígono!
+% 2) - O ângulo ótimo do grid será fixo através de 1)
+% 3) - 1) e 2) promoverão grande consistência no cálculo de buracos
+
 clear; close all;clc
 % xyz = load('pilha_densa.txt');
 xyz = load('ensaio_bom_ss.txt');
@@ -20,7 +25,9 @@ a = inv((X'*X))*Y'*X;
 % x1 = -500;
 % y1 = -500*a;
 % angle = atan(a);
-angle = 0.188; %0.188 parece OK
+
+%0.186 bad_ss / 0.189 bom_ss
+angle = 0.189; %0.188 parece OK0
 R = [cos(angle) sin(angle) 0;-sin(angle) cos(angle) 0;0 0 1];
 xyz_rotated = (R*xyz')'; %pequena melhoria
 xy_rotated = xyz_rotated(:,1:2); %pega XY
@@ -49,8 +56,8 @@ min_y = floor(min(Y)) - inflation_factor;
 %largura e altura do grid
 dx = max_x - min_x;
 dy = max_y - min_y;
-%% Problema = encontrar menor quadado que contenha o retangulo dx,dy
-% centro do quadrado ?
+%% Problema = encontrar menor quadrilátero com a menor/melhor resolução!
+% centro do quadrilátero ?
 x_sq = (max_x + min_x) / 2;
 y_sq = (max_y + min_y) / 2;
 
@@ -70,9 +77,10 @@ max_x_sq = x_sq + new_dx/2;
 min_y_sq = y_sq - new_dy/2;
 max_y_sq = y_sq + new_dy/2;
 % return
+area = (max_x_sq - min_x_sq)*(max_y_sq - min_y_sq) % <-- Quero minimizar
 %%
-g_div = gcd(new_dx,new_dy)
-division_factor = 2^(-6); % 0 < div_factor <= 1
+g_div = gcd(new_dx,new_dy) % <--- Quero minimizar !
+division_factor = 2^(-6); % 0 < div_factor <= 1 %Ajsute da precisão
 cell_length = g_div*division_factor;
 fprintf('Resolução Cell = %d m\n',cell_length);
 
@@ -84,13 +92,14 @@ ycells = min_y_sq:cell_length:max_y_sq;
 nx = length(xcells);
 ny = length(ycells);
 
-ncells = (nx-1) * (ny-1);
+ncells = (nx-1) * (ny-1); 
 % p = [1000 1000]
 x_all = xyz_rotated(:,1);
 y_all = xyz_rotated(:,2);
 plotgrid(xcells,ycells);
 plot(x_all,y_all,'.');hold on;
-% return
+ncells
+return
 %% separa pontos de query da nuvem
 % serão n_cells procuras
 % pega pontos medios

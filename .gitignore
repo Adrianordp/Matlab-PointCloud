@@ -1,5 +1,5 @@
 *.asc
-*.txt
+#*.txt
 *.fig
 *.png
 *.m~
