@@ -1,3 +1,5 @@
+%plota grid
+
 function y = plotgrid(xcells,ycells)
 ny = length(ycells);
 nx = length(xcells);
