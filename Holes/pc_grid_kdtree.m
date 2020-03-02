@@ -62,7 +62,7 @@ x_sq = (max_x + min_x) / 2;
 y_sq = (max_y + min_y) / 2;
 
 m_factor = 1;
-mult_factor = m_factor*dy;
+mult_factor = m_factor*dy
 while (mult_factor < dx)
    m_factor = m_factor+1;
    mult_factor = m_factor*dy;
