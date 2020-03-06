@@ -99,7 +99,7 @@ y_all = xyz_rotated(:,2);
 plotgrid(xcells,ycells);
 plot(x_all,y_all,'.');hold on;
 ncells
-return
+% return
 %% separa pontos de query da nuvem
 % serão n_cells procuras
 % pega pontos medios
