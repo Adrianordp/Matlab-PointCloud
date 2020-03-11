@@ -5,7 +5,7 @@ clear;close all;clc
 
 tftree = rostf
 transfm = rosmessage('geometry_msgs/TransformStamped');
-transfm.ChildFrameId = 'pose';
+transfm.ChildFrameId = 'matlab_pose';
 transfm.Header.FrameId = 'map';
 transfm.Transform.Translation.X = 0;
 transfm.Transform.Rotation.W = 1;
@@ -26,7 +26,7 @@ map.starty = 0.5; % 0 < y < 1
 %translada cloud para origem da grid para acessar em forma de matrix
 map.tfx = map.startx*map.resolution*map.size;
 map.tfy = map.starty*map.resolution*map.size;
-map.grid = zeros(map.size);
+map.grid = -ones(map.size);
 
 
 
@@ -44,23 +44,27 @@ while(1)
   cloud_time = cloud.Header.Stamp;
   cloud_xyz = cloud.readXYZ;
   cloud_xy = cloud_xyz(:,1:2);
-  n = length(cloud_xy);
+  
+  % filtra cloud
+  cloud_xy_filter = filtercloud(cloud_xy);
+  
+  n = length(cloud_xy_filter);
   
   if(~first_cloud)
       first_cloud = true;
-      map = registerCloud(map,cloud_xy);
-
-      plot(cloud_xy(:,1),cloud_xy(:,2),'.');
+%       map = registerCloud(map,cloud_xy_filter);
+        map = registerCloudProbs(map,cloud_xy_filter,pose)
+    
+      plot(cloud_xy_filter(:,1),cloud_xy_filter(:,2),'.');
+      figure
       plotmatrix(map.grid)
-      
-%       mapaccess(map,cloud_xy(1,1),cloud_xy(1,2))
       
   else 
       de = 0;
       H = zeros(3);
       dtr = zeros(3,1);
       for i=1:n
-      endpoint = cloud_xy(i,:); %sensor reading
+      endpoint = cloud_xy_filter(i,:); %sensor reading
       endpoint_tf = transform_endpoints(endpoint,pose);
       %as duas funções abaixo podem ser uma só
       funval = 1 - mapaccess(map,endpoint_tf);
@@ -87,10 +91,11 @@ while(1)
          updist = sqrt ((update_pose(1:2) - pose(1:2))'*(update_pose(1:2) - pose(1:2)))
          angdist = abs(update_pose(3) - pose(3))
          if(updist > 0.3 || angdist > 0.06)
-             cloud_t = transform_cloud(cloud_xy,pose);
+             cloud_t = transform_cloud(cloud_xy_filter,pose);
              figure(1)
              hold on
              plotcloud(cloud_t);
+             % usar probabilidade
              map = registerCloud(map,cloud_t);
              update_pose = pose;
          end

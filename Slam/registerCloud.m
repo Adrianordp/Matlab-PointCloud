@@ -13,9 +13,9 @@ for i=1:n
     ix = fix( cloud_tfed(i,1)/map.resolution );
 %     iy = fix( cloud_tfed(i,2)/map.resolution );
     iy = fix( cloud_tfed(i,2)/map.resolution );
-    if(ix > map.size || iy > map.size  || ix < 0 || iy < 0)
+    if(ix > map.size-1 || iy > map.size-1  || ix < 0 || iy < 0)
     else 
-    updated_map.grid(ix,iy) = 1; 
+    updated_map.grid(ix,iy) = 100; 
     end
 end
 
