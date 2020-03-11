@@ -1,8 +1,8 @@
-function tf_endpoint = transform_endpoints(s,pose)
+function tf_cloud = transform_cloud(cloud,pose)
 x = pose(1);
 y = pose(2);
 theta = pose(3);
 R = [cos(theta) -sin(theta);sin(theta) cos(theta)];
 
-tf_endpoint = R*s' + [x;y];
+tf_cloud = (R*cloud' + [x;y])';
 end

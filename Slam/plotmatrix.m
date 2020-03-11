@@ -1,6 +1,5 @@
 function plotmatrix(A)
 % axis ij -> aqui inverte a mostra
-figure
 while any(A(:) > 0)
   [r,c] = find(A>0);
   scatter(r,c,'filled','black')

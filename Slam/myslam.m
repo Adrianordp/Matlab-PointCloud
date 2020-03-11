@@ -5,7 +5,7 @@ clear;close all;clc
 
 tftree = rostf
 transfm = rosmessage('geometry_msgs/TransformStamped');
-transfm.ChildFrameId = 'cloud';
+transfm.ChildFrameId = 'pose';
 transfm.Header.FrameId = 'map';
 transfm.Transform.Translation.X = 0;
 transfm.Transform.Rotation.W = 1;
@@ -16,7 +16,7 @@ transfm.Transform.Rotation.Z = 0;
 
 
 %% Map Specs
-map.resolution = 0.1;
+map.resolution = 0.05;
 map.size = 200; %cells
 disp('Map side length') ;
 disp(map.resolution*map.size);
@@ -35,6 +35,7 @@ lidar_read = rossubscriber('/cloud');
 first_cloud = false;
 
 pose = [0 0 0]';
+update_pose = pose;
 
 % endpois
 
@@ -62,8 +63,8 @@ while(1)
       endpoint = cloud_xy(i,:); %sensor reading
       endpoint_tf = transform_endpoints(endpoint,pose);
       %as duas funções abaixo podem ser uma só
-      funval = 1 - mapaccess(map,endpoint_tf.x,endpoint_tf.y);
-      dm = mapgradient(map,endpoint_tf.x,endpoint_tf.y);
+      funval = 1 - mapaccess(map,endpoint_tf);
+      dm = mapgradient(map,endpoint_tf);
       jac = model_deriv(endpoint,pose);
       
       dtr = dtr + (dm*jac)'*funval; 
@@ -80,8 +81,19 @@ while(1)
          transfm.Transform.Rotation.X = q(2);
          transfm.Transform.Rotation.Y = q(3);
          transfm.Transform.Rotation.Z = q(4);
-         transfm.Header.Stamp = cloud_time
+         transfm.Header.Stamp = cloud_time;
          tftree.sendTransform(transfm);
+         
+         updist = sqrt ((update_pose(1:2) - pose(1:2))'*(update_pose(1:2) - pose(1:2)))
+         angdist = abs(update_pose(3) - pose(3))
+         if(updist > 0.3 || angdist > 0.06)
+             cloud_t = transform_cloud(cloud_xy,pose);
+             figure(1)
+             hold on
+             plotcloud(cloud_t);
+             map = registerCloud(map,cloud_t);
+             update_pose = pose;
+         end
          
       end
       

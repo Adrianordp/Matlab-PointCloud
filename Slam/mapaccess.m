@@ -1,11 +1,11 @@
-function occupancyValue = mapaccess(map,x,y)
-    x = x + map.tfx;
-    y = y + map.tfx;
+function occupancyValue = mapaccess(map,xy)
+    x = xy(1) + map.tfx;
+    y = xy(2) + map.tfx;
 
 % iy,ix -> ix (mapa ) ~ y (continuo) / iy (mapa) ~ x (continuo)
     ix = fix( x/map.resolution );
     iy = fix( y/map.resolution );
-     if(ix > map.size || iy > map.size  || ix < 0 || iy < 0)
+     if(ix > map.size-1 || iy > map.size-1  || ix < 0 || iy < 0)
         occupancyValue = 0;
         return;
      end
