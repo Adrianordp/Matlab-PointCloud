@@ -1,6 +1,19 @@
 clear;close all;clc
 % rosinit
 
+%% ROS STUFF
+
+tftree = rostf
+transfm = rosmessage('geometry_msgs/TransformStamped');
+transfm.ChildFrameId = 'cloud';
+transfm.Header.FrameId = 'map';
+transfm.Transform.Translation.X = 0;
+transfm.Transform.Rotation.W = 1;
+transfm.Transform.Rotation.X = 0;
+transfm.Transform.Rotation.Y = 0;
+transfm.Transform.Rotation.Z = 0;
+
+
 
 %% Map Specs
 map.resolution = 0.1;
@@ -21,14 +34,13 @@ map.grid = zeros(map.size);
 lidar_read = rossubscriber('/cloud');
 first_cloud = false;
 
-pose.x = 0;
-pose.y = 0;
-pose.theta = 0;
+pose = [0 0 0]';
 
 % endpois
 
 while(1)
   cloud = receive(lidar_read);
+  cloud_time = cloud.Header.Stamp;
   cloud_xyz = cloud.readXYZ;
   cloud_xy = cloud_xyz(:,1:2);
   n = length(cloud_xy);
@@ -40,26 +52,37 @@ while(1)
       plot(cloud_xy(:,1),cloud_xy(:,2),'.');
       plotmatrix(map.grid)
       
-      mapaccess(map,cloud_xy(1,1),cloud_xy(1,2))
+%       mapaccess(map,cloud_xy(1,1),cloud_xy(1,2))
       
   else 
       de = 0;
+      H = zeros(3);
+      dtr = zeros(3,1);
       for i=1:n
       endpoint = cloud_xy(i,:); %sensor reading
-      tf_endp = transform_endpoints(endpoint,pose);
-      MG = mapgradient(map,tf_endp.x,tf_endp.y);
-      JAC = model_deriv(endpoint,pose);
-      H = (MG*JAC)'*(MG*JAC);
-      if(det(H) == 0)
-          
-      else
-          MG
-          JAC
-          (1-mapaccess(map,tf_endp.x,tf_endp.y))
-          de = de + inv(H)*(MG*JAC)'*(1-mapaccess(map,tf_endp.x,tf_endp.y))
-          
+      endpoint_tf = transform_endpoints(endpoint,pose);
+      %as duas funções abaixo podem ser uma só
+      funval = 1 - mapaccess(map,endpoint_tf.x,endpoint_tf.y);
+      dm = mapgradient(map,endpoint_tf.x,endpoint_tf.y);
+      jac = model_deriv(endpoint,pose);
+      
+      dtr = dtr + (dm*jac)'*funval; 
+      H = H + (dm*jac)'*(dm*jac);
       end
       
+      if(H(1,1) ~= 0 && H(2,2) ~= 0)
+         searchdir = inv(H)*dtr
+         pose = pose + searchdir
+         q = eul2quat([pose(3) 0 0]);
+         transfm.Transform.Translation.X = pose(1);
+         transfm.Transform.Translation.Y = pose(2);
+         transfm.Transform.Rotation.W = q(1);
+         transfm.Transform.Rotation.X = q(2);
+         transfm.Transform.Rotation.Y = q(3);
+         transfm.Transform.Rotation.Z = q(4);
+         transfm.Header.Stamp = cloud_time
+         tftree.sendTransform(transfm);
+         
       end
       
       
@@ -79,9 +102,9 @@ while(1)
 end
 
 function jac = model_deriv(endpoint,pose)
-
-jac = [1 0 -sin(pose.theta)*endpoint(1)-cos(pose.theta)*endpoint(2);
-       0 1 cos(pose.theta)*endpoint(1)-sin(pose.theta)*endpoint(2)];
+theta = pose(3);
+jac = [1 0 -sin(theta)*endpoint(1)-cos(theta)*endpoint(2);
+       0 1 cos(theta)*endpoint(1)-sin(theta)*endpoint(2)];
 
 end
 
