@@ -5,7 +5,7 @@ function occupancyValue = mapaccess(map,xy)
 % iy,ix -> ix (mapa ) ~ y (continuo) / iy (mapa) ~ x (continuo)
     ix = fix( x/map.resolution );
     iy = fix( y/map.resolution );
-     if(ix > map.size-1 || iy > map.size-1  || ix < 0 || iy < 0)
+     if(ix > map.size-1 || iy > map.size-1  || ix <= 0 || iy <= 0)
         occupancyValue = 0;
         return;
      end
@@ -16,10 +16,10 @@ function occupancyValue = mapaccess(map,xy)
 %     p11 = map.grid(ix,iy+1);
 
     %Ver anotações tablet
-    p00 = map.grid(ix,iy); %
-    p10 = map.grid(ix+1,iy);
-    p11 = map.grid(ix+1,iy+1);
-    p01 = map.grid(ix,iy+1);
+    p00 = getProb(map.grid(ix,iy)); %
+    p10 = getProb(map.grid(ix+1,iy));
+    p11 = getProb(map.grid(ix+1,iy+1));
+    p01 = getProb(map.grid(ix,iy+1));
     
     %dá pra simplificar o uso de "map.resolution
     
@@ -43,10 +43,13 @@ function occupancyValue = mapaccess(map,xy)
 %    plot(map.resolution*(ix+1),map.resolution*(iy+1),'bo')
 %    close all
   
-            
-    
-    
     
 
 
+end
+
+
+function prob = getProb(logOdd)
+odd = exp(logOdd);
+prob = odd/(odd+1);
 end

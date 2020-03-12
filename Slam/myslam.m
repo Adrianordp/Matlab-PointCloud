@@ -26,7 +26,11 @@ map.starty = 0.5; % 0 < y < 1
 %translada cloud para origem da grid para acessar em forma de matrix
 map.tfx = map.startx*map.resolution*map.size;
 map.tfy = map.starty*map.resolution*map.size;
-map.grid = -ones(map.size);
+map.grid = zeros(map.size);
+map.updateOcc = 0.9;
+map.updateFree = 0.4;
+map.logOddOcc = log(map.updateOcc / (1 - map.updateOcc));
+map.logOddFree = log(map.updateFree / (1 - map.updateFree));
 
 
 
@@ -56,8 +60,8 @@ while(1)
         map = registerCloudProbs(map,cloud_xy_filter,pose)
     
       plot(cloud_xy_filter(:,1),cloud_xy_filter(:,2),'.');
-      figure
-      plotmatrix(map.grid)
+%       figure
+%       plotmatrix(map.grid)
       
   else 
       de = 0;
@@ -78,15 +82,15 @@ while(1)
       if(H(1,1) ~= 0 && H(2,2) ~= 0)
          searchdir = inv(H)*dtr
          pose = pose + searchdir
-         q = eul2quat([pose(3) 0 0]);
-         transfm.Transform.Translation.X = pose(1);
-         transfm.Transform.Translation.Y = pose(2);
-         transfm.Transform.Rotation.W = q(1);
-         transfm.Transform.Rotation.X = q(2);
-         transfm.Transform.Rotation.Y = q(3);
-         transfm.Transform.Rotation.Z = q(4);
-         transfm.Header.Stamp = cloud_time;
-         tftree.sendTransform(transfm);
+%          q = eul2quat([pose(3) 0 0]);
+%          transfm.Transform.Translation.X = pose(1);
+%          transfm.Transform.Translation.Y = pose(2);
+%          transfm.Transform.Rotation.W = q(1);
+%          transfm.Transform.Rotation.X = q(2);
+%          transfm.Transform.Rotation.Y = q(3);
+%          transfm.Transform.Rotation.Z = q(4);
+%          transfm.Header.Stamp = cloud_time;
+%          tftree.sendTransform(transfm);
          
          updist = sqrt ((update_pose(1:2) - pose(1:2))'*(update_pose(1:2) - pose(1:2)))
          angdist = abs(update_pose(3) - pose(3))
@@ -96,7 +100,7 @@ while(1)
              hold on
              plotcloud(cloud_t);
              % usar probabilidade
-             map = registerCloud(map,cloud_t);
+             map = registerCloudProbs(map,cloud_t,pose)
              update_pose = pose;
          end
          

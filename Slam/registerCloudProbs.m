@@ -4,8 +4,8 @@ n = length(cloud_xy);
 % cloud_tfed = (tf.R*cloud_xy' + tf.T)'; %transforma nuvem para coordenada grid
 % cloud_xy(:,2) = -cloud_xy(:,2)
 cloud_tfed = cloud_xy + [map.tfx map.tfy]; %transforma nuvem para coordenada grid
-ix0 = (pose(1) + map.tfx)/ map.resolution ;
-iy0 = (pose(2) + map.tfy) /map.resolution ;
+ix0 = fix((pose(1) + map.tfx)/ map.resolution) ;
+iy0 = fix((pose(2) + map.tfy) /map.resolution) ;
 for i=1:n
     
     % iy,ix -> ix (mapa ) ~ y (continuo) / iy (mapa) ~ x (continuo). PODE
@@ -18,8 +18,9 @@ for i=1:n
         
         %usar modelo de probabilidade
 
-    updated_map.grid = breseham(updated_map.grid,ix0,iy0,ix,iy);  %free 
-    updated_map.grid(ix,iy) = 100; %chamar occ model
+    updated_map = breseham(updated_map,ix0,iy0,ix,iy);  %free 
+%     updated_map.grid(ix,iy) = 100; %chamar occ model
+    updated_map.grid(ix,iy) = updateSetOcc(updated_map.grid(ix,iy),updated_map); %chamar free model
 
     end
 end
@@ -27,25 +28,24 @@ end
 end
 
 
-function m = breseham(matrix, x0,y0, x1,y1)
+function map = breseham(map, x0,y0, x1,y1)
     if abs(y1 - y0) < abs(x1 - x0)
         if x0 > x1
-           m  = plotLineLow(matrix,x1, y1, x0, y0);
+           map  = plotLineLow(map,x1, y1, x0, y0);
         else
-            m = plotLineLow(matrix,x0, y0, x1, y1);
+            map = plotLineLow(map,x0, y0, x1, y1);
         end
     else
         if y0 > y1
-           m =  plotLineHigh(matrix,x1, y1, x0, y0);
+           map =  plotLineHigh(map,x1, y1, x0, y0);
         else
-           m =  plotLineHigh(matrix,x0, y0, x1, y1);
+           map =  plotLineHigh(map,x0, y0, x1, y1);
         end
     end
 end
 
 
-function m = plotLineLow(matrix,x0,y0, x1,y1)
-m = matrix;
+function map = plotLineLow(map,x0,y0, x1,y1)
     dx = x1 - x0;
     dy = y1 - y0;
     yi = 1;
@@ -58,7 +58,7 @@ m = matrix;
 
     for x=x0:1:x1
 %         plot(x, y)
-        m(x,y) = 0; %chamar free model
+        map.grid(x,y) = updateSetFree(map.grid(x,y),map); %chamar free model
         if D > 0
                y = y + yi;
                D = D - 2*dx;
@@ -68,8 +68,7 @@ m = matrix;
 end
 
 
-function m = plotLineHigh(matrix,x0,y0, x1,y1)
-m = matrix;
+function map = plotLineHigh(map,x0,y0, x1,y1)
     dx = x1 - x0;
     dy = y1 - y0;
     xi = 1;
@@ -82,7 +81,7 @@ m = matrix;
 
     for y=y0:1:y1
 %         plot(x, y,'.')
-    m(x,y) = 0; %chamar free model
+    map.grid(x,y) = updateSetFree(map.grid(x,y),map); %chamar free model
         if D > 0
                x = x + xi;
                D = D - 2*dy;
@@ -90,7 +89,24 @@ m = matrix;
         D = D + 2*dx;
     end
 end
+
+% 0 < logOdd < 100
+function LogOdd = updateSetOcc(LogOdd_in,map)
     
+    if(LogOdd_in < 50)
+    LogOdd = LogOdd_in + map.logOddOcc;
+    else
+    LogOdd = LogOdd_in;
+    end
+end
+
+function LogOdd = updateSetFree(LogOdd_in,map)
+    
+    LogOdd = LogOdd_in + map.logOddFree;
+    
+end
+
+
         
 
 % function update = inv_sensor_model()
