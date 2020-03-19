@@ -1,6 +1,6 @@
 clear; close all;clc
 % xyz = load('pilha_densa.txt');
-xyz = load('ensaio_bom_ss.txt');
+xyz = load('filtered_000002.asc');
 xyz = xyz(:,1:3);
 xy = xyz(:,1:2);
 % pc = pointCloud(xyz)
@@ -10,18 +10,24 @@ xy = xyz(:,1:2);
 % Y' = aX
 % parametro = a
 
-Y = xyz(:,2);
-X = xyz(:,1);
+% Y = xyz(:,2);
+% X = xyz(:,1);
 
-a = inv((X'*X))*Y'*X;
-
-
-angle = -0.188;% 0.188
-R = [cos(angle) -sin(angle);sin(angle) cos(angle)]; %CW
 x_c = (max(xyz(:,1)) + min(xyz(:,1)) )/2
 y_c = (max(xyz(:,2)) + min(xyz(:,2)) )/2
-xy_rotated = (R*(xy' - [x_c;y_c]) + [x_c;y_c])'; %em torno da origem
 
+% a = inv((X'*X))*Y'*X;
+% TOTCELLS = [];
+% ANGLES = -0.180:-0.001:-0.3;
+% for angle=ANGLES
+
+%     angle = ANGLES(i);
+angle = -0.188;% 0.188 ALINHA
+R = [cos(angle) -sin(angle);sin(angle) cos(angle)]; %CW
+
+xy_rotated = (R*(xy' - [x_c;y_c]) + [x_c;y_c])'; %em torno do centro da pilha
+% save('xy_rotated.asc','xy_rotated','-ASCII')
+% return
 % xy_rotated = xyz_rotated(:,1:2); %pega XY
 
 % plot(xy_rotated(:,1),xy_rotated(:,2),'r.')
@@ -40,13 +46,19 @@ xy_ = xy_rotated - [map.tfx-2 map.tfy-2]; %-2 ?
 
 
 % Tem que ver isso aqui
-precision = 1; %m
-res = 1/precision;
-xy_ = xy_ * res;
+res = 1; %m
+adjust = 1/res - 1;
+xy_ = xy_ / res - [adjust adjust];
 
-xy_int = fix(xy_);
+xy_int = fix(xy_); % 'fix' ou 'round'
 x_max_i = max(xy_int(:,1));
 y_max_i = max(xy_int(:,2));
+
+% TOTCELLS = [TOTCEL LS;x_max_i*y_max_i];
+
+% end
+% plot(TOTCELLS)
+% return
 
 M = zeros(x_max_i,y_max_i);
 
@@ -55,10 +67,12 @@ for i=1:n
    M(xy_int(i,1),xy_int(i,2)) = 1 ;    
 end
 
+plotgrid2(M);
 plotmatrix(M);
+
 [row,col] = size(M);
 
-total_cells = row*col;
+total_cells = row*col
 total_filled = sum(M(:));
 pct = total_filled/total_cells
 

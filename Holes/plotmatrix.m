@@ -1,11 +1,11 @@
 function plotmatrix(A)
 % axis ij -> aqui inverte a mostra
   [r,c] = find(A>0); %A > 0
-  scatter(r,c,'filled','red')
+  scatter(r,c,1,'filled','red')
   hold on
   [r,c] = find(A<0); %A > 0
   scatter(r,c,'filled','green')
   
-  grid on
+%   grid on
   
 end
