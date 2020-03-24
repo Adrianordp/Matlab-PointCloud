@@ -17,12 +17,12 @@ grid on
 
 
 % 10 m/s
-for i=1
+for i=11
     roll = data{i}(:,2);
     pitch= data{i}(:,3);
     yaw = data{i}(:,4);
     t = length(roll);
-    pct = linspace(0,100,t);
+    pct = linspace(0,1,t);
 %     plot(pct,roll)
     plot(pct,pitch)
 %     plot(pct,yaw)
