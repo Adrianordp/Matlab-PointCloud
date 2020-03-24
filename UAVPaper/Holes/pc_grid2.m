@@ -1,6 +1,6 @@
 clear; close all;clc
 % xyz = load('pilha_densa.txt');
-xyz = load('pontos_1574705224_seg.asc');
+xyz = load('pontos_1574705224_seg.asc'); %AQUI VC SELECIONA A NUVEM JÁ SEGMENTADA
 xyz = xyz(:,1:3);
 xy = xyz(:,1:2);
 % pc = pointCloud(xyz)
