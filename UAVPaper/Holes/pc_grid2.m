@@ -1,6 +1,7 @@
 clear; close all;clc
 % xyz = load('pilha_densa.txt');
-xyz = load('pontos_1574705224_seg.asc'); %AQUI VC SELECIONA A NUVEM JÁ SEGMENTADA
+filename = 'pontos_1574704717_seg.asc'; %AQUI VC SELECIONA A NUVEM JÁ SEGMENTADA
+xyz = load(filename); 
 xyz = xyz(:,1:3);
 xy = xyz(:,1:2);
 % pc = pointCloud(xyz)
@@ -13,8 +14,8 @@ xy = xyz(:,1:2);
 % Y = xyz(:,2);
 % X = xyz(:,1);
 
-x_c = (max(xyz(:,1)) + min(xyz(:,1)) )/2
-y_c = (max(xyz(:,2)) + min(xyz(:,2)) )/2
+x_c = (max(xyz(:,1)) + min(xyz(:,1)) )/2;
+y_c = (max(xyz(:,2)) + min(xyz(:,2)) )/2;
 
 % a = inv((X'*X))*Y'*X;
 % TOTCELLS = [];
@@ -46,7 +47,10 @@ xy_ = xy_rotated - [map.tfx-2 map.tfy-2]; %-2 ?
 
 
 % Tem que ver isso aqui
-res = 1; %m
+RES = 1:0.1:2
+total_res = length(RES);
+for j=RES
+res = RES(j); %m
 adjust = 1/res - 1;
 xy_ = xy_ / res - [adjust adjust];
 
@@ -67,17 +71,23 @@ for i=1:n
    M(xy_int(i,1),xy_int(i,2)) = 1 ;    
 end
 
-plotgrid2(M);
-plotmatrix(M);
+% plotgrid2(M);
+% plotmatrix(M);
 
 [row,col] = size(M);
 
 total_cells = row*col
 total_filled = sum(M(:));
-pct = total_filled/total_cells
+pct(j) = total_filled/total_cells;
 
+end
 
-
+plot(1-pct)
+xlabel('Res [m]');
+ylabel('Holes %');
+legend(filename)
+fig_name = strcat(filename,'.fig');
+savefig(fig_name)
 
 
 % x-> column
