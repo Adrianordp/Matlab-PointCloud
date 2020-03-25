@@ -42,17 +42,17 @@ y_min = min(xy_rotated(:,2));
 map.tfx = fix(x_min);
 map.tfy = fix(y_min);
 
-xy_ = xy_rotated - [map.tfx-2 map.tfy-2]; %-2 ?
+xy_real = xy_rotated - [map.tfx-2 map.tfy-2]; %-2 ?
 % plot(xy_(:,1),xy_(:,2),'.')
 
 
 % Tem que ver isso aqui
-RES = 1:0.1:2
+RES = 0.5:0.01:4;
 total_res = length(RES);
-for j=RES
-res = RES(j); %m
+for j=1:total_res
+res = RES(j) %m
 adjust = 1/res - 1;
-xy_ = xy_ / res - [adjust adjust];
+xy_ = xy_real / res - [adjust adjust];
 
 xy_int = fix(xy_); % 'fix' ou 'round'
 x_max_i = max(xy_int(:,1));
@@ -76,13 +76,14 @@ end
 
 [row,col] = size(M);
 
-total_cells = row*col
+total_cells = row*col;
 total_filled = sum(M(:));
-pct(j) = total_filled/total_cells;
+pct(j) = total_filled/total_cells
 
 end
 
-plot(1-pct)
+plot(RES,1-pct);
+grid on
 xlabel('Res [m]');
 ylabel('Holes %');
 legend(filename)
