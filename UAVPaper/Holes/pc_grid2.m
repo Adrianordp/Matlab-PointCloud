@@ -47,14 +47,14 @@ xy_real = xy_rotated - [map.tfx-2 map.tfy-2]; %-2 ?
 
 
 % Tem que ver isso aqui
-RES = 0.5:0.01:4;
+RES = 0.1:0.1:100
 total_res = length(RES);
 for j=1:total_res
 res = RES(j) %m
 adjust = 1/res - 1;
 xy_ = xy_real / res - [adjust adjust];
 
-xy_int = fix(xy_); % 'fix' ou 'round'
+xy_int = round(xy_); % 'fix' ou 'round'
 x_max_i = max(xy_int(:,1));
 y_max_i = max(xy_int(:,2));
 

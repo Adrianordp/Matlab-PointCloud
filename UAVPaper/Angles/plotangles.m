@@ -24,7 +24,7 @@ for i=11
     t = length(roll);
     pct = linspace(0,1,t);
 %     plot(pct,roll)
-    plot(pct,pitch)
+    plot(pct,pitch*360/2/pi)
 %     plot(pct,yaw)
 
 end
