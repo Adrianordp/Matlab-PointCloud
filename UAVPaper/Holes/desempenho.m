@@ -12,7 +12,7 @@ Y = ID;
 % X = Durs';
 X = [ones(n,1) Durs H Freqs Vels];
 
-Beta = inv((X'*X))*X'*Y;
+Beta = inv((X'*X))*X'*Y; %Mínimos Quadrados
 
 
 disp('Erro médio quadrático')
@@ -36,10 +36,10 @@ Qb = eye(n_beta);
 H = Beta_*Beta_'+Qb
 f = Beta_*alfa;
 Acon = [eye(n_beta);-eye(n_beta)];
-Xmax = [300 100 100 10];
-Xmin = [-100 -100 -100 -100];
+Xmax = [300 100 100 10]; %limite máximo variavies
+Xmin = [-100 -100 -100 -100]; % // mínimo
 Bcon = [Xmax;-Xmin];
-X_otm = quadprog(H,f,Acon,Bcon)
+X_otm = quadprog(H,f,Acon,Bcon) %N funciona
 
 % Performance = Beta(1) + Beta_'*X(1,2:end)'
 Performance = Beta(1) + Beta_'*X_otm
@@ -50,7 +50,7 @@ Performance = Beta(1) + Beta_'*X_otm
 % X_otm = inv(Beta_*Beta_'+Qb)*Beta_*alfa
 % % X_otm = X(1,2:end)'
 % J = (alfa - Beta_'*X_otm) + X_otm'*Qb*X_otm
-return
+return %Ignora
 % ???
 % MaxID = 100;
 % alfa = [MaxID*ones(n,1) - Beta(1)*ones(n,1) - Beta(2)*Durs - Beta(3)*H - Beta(4)*Freqs - Beta(5)*Vels]
