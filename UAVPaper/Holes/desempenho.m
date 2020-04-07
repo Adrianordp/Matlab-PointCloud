@@ -1,28 +1,68 @@
 clear;close all;clc
 TotalDist = 2*463 + 30; %tirado do earth
-ID = [84.36 87.13 83.31 90.13 89.48 90.22 85.97 88.28 87.99 90.15 88.89]';
+ID = 0.01.*[84.36 87.13 83.31 90.13 89.48 90.22 85.97 88.28 87.99 90.15 88.89]';
 %Durs = [197 215 187 215 330 335 215 215 330 333 254]';
 Vels = [10 8 10 8 4 4 8 8 4 4 6]';
 Durs = TotalDist./Vels;
 H = [30 30 30 25 30 25 30 25 30 25 27.5]';
-Freqs = [12.5 12.5 50 12.5 12.5 12.5 50 50 50 50 50]';
+Freqs = [12.5 12.5 50 12.5 12.5 12.5 50 50 50 50 25]';
+
+Vels_i = 1./Vels;
+H_i = 1./H;
+Freqs_i = 1./Freqs;
+Durs_i = 1./Durs;
 
 n = length(ID);
 Y = ID;
 % X = Durs';
-X = [ones(n,1) Durs H Freqs Vels];
+X_i =  [ones(n,1) Vels_i H_i Freqs];
+X_normal = [ones(n,1) Vels.*Vels H Freqs];
+
+X = X_normal;
 
 Beta = inv((X'*X))*X'*Y; %Mínimos Quadrados
-
 
 disp('Erro médio quadrático')
 Err = Y - X*Beta
 Errsqr = Err'*Err
-% plot(Y)
-% hold on
-% plot(X*Beta)
-% legend('Output','Model Estimation')
-% retur
+
+
+
+plot(Y)
+hold on
+plot(X*Beta)
+legend('Output','Model Estimation')
+return
+%% Try 100
+Qb = 1;
+nx = size(X,2);
+Qx = eye(nx);
+% Qx = zeros(size(X,2));
+Qx(1,1) = 0;
+% J = (1-X*Beta)'*Qb*(1-X*Beta) + X'*Qx*X
+
+% X_otm = inv(Beta*Beta' + Qx)*Beta
+
+% J_otm = (1-X_otm'*Beta)'*Qb*(1-X_otm'*Beta) + X_otm'*Qx*X_otm
+
+% ID = X_otm'*Beta
+
+%          min 0.5*x'*H*x + f'*x   subject to:  A*x <= b 
+%               x  
+
+H = Beta*Beta'+Qx;
+f = Beta;
+Acon = [eye(nx);-eye(nx)];
+Xmax = [1.1 300 100 100 300]; %limite máximo variavies
+Xmin = [0.9 0 0 0 0]; % // mínimo
+Bcon = [Xmax;-Xmin];
+
+X_otm = -quadprog(H,f,Acon,Bcon) %N funciona
+
+ID = X_otm'*Beta
+J_otm = (1-X_otm'*Beta)'*Qb*(1-X_otm'*Beta) + X_otm'*Qx*X_otm
+
+return %Ignora
 %% Cost
 % X = [delta_t h f vels]
 Ref = 100;
@@ -50,6 +90,7 @@ Performance = Beta(1) + Beta_'*X_otm
 % X_otm = inv(Beta_*Beta_'+Qb)*Beta_*alfa
 % % X_otm = X(1,2:end)'
 % J = (alfa - Beta_'*X_otm) + X_otm'*Qb*X_otm
+
 return %Ignora
 % ???
 % MaxID = 100;
@@ -60,22 +101,4 @@ return %Ignora
 % Durs_ = inv(Beta(2)*Qd+Qt)*(Beta(2)*Qd*alfa)
 % ??? END
 
-
-
-
-%% Cost Test
-close all
-JJ = [];
-min_j = inf;
-for v = -1:0.01:1
-    durs_ = v*Durs_
-J = (-Beta(2)*durs_ + alfa)'*Qd*(-Beta(2)*durs_ + alfa) + durs_'*Qt*durs_
-if(J < min_j)
-    durs_min = durs_;
-    min_j = J;
-    mindex = v;
-end
-JJ = [JJ;J];
-end
-plot(JJ)
 
