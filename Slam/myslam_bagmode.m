@@ -10,23 +10,31 @@ bagselect = select(bag,'topic','/cloud');
 lasermsgs = readMessages(bagselect);
 
 %% Map Specs
-map.resolution = 0.1;
-map.size = 100; %cells
+map.resolution = 0.1; % = cell length
+map.scale = 1/map.resolution;
+map.scale2 = map.scale^2;
+map.size = 400; %cells
 disp('Map side length') ;
-disp(map.resolution*map.size);
+disp(map.resolution*map.size); %dist em metros
 map.startx = 0.5; % 0 < x < 1
 map.starty = 0.5; % 0 < y < 1
 
-%translada cloud para origem da grid para acessar em forma de matrix
+%translada ponto para grid
 map.tfx = map.startx*map.resolution*map.size;
 map.tfy = map.starty*map.resolution*map.size;
+
 map.grid = zeros(map.size);
 map.grid_index = -ones(map.size);
+
+% probabilidades
 map.updateOcc = 0.9;
 map.updateFree = 0.4;
+
+% formato Logodd (atualiza mais rapidamente)
 map.logOddOcc = log(map.updateOcc / (1 - map.updateOcc));
 map.logOddFree = log(map.updateFree / (1 - map.updateFree));
 
+% funcionalidade para evitar que vários "beams" atualizem uma msm célula
 map.currUpdateIndex = 0;
 map.currMarkFreeIndex = -1;
 map.currMarkOccIndex = -1;
@@ -43,8 +51,8 @@ last_mapupdate_pose = world_pose;
 total_msgs = size(lasermsgs,1);
 init_map_scans = 10;
 for i=1:total_msgs
-%   cloud = receive(lidar_read);
-   cloud = lasermsgs{i};
+
+  cloud = lasermsgs{i};
   cloud_xyz = cloud.readXYZ;
   cloud_xy = cloud_xyz(:,1:2);
   
@@ -71,7 +79,7 @@ for i=1:total_msgs
       de = 0;
       H = zeros(3);
       dtr = zeros(3,1);
-      iterations = 3;
+      iterations = 5;
       estimate = world_pose;
       for it=1:iterations
          

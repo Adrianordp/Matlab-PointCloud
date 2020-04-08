@@ -3,8 +3,8 @@ function dm = mapgradient(map,xy)
     y = xy(2) + map.tfx;
 
 % iy,ix -> ix (mapa ) ~ y (continuo) / iy (mapa) ~ x (continuo)
-    ix = fix( x/map.resolution );
-    iy = fix( y/map.resolution );
+    ix = fix( x*map.scale );
+    iy = fix( y*map.scale );
      if(ix > map.size-1 || iy > map.size-1  || ix <= 0 || iy <= 0)
         dm = [0 0];
         return;
@@ -26,15 +26,15 @@ function dm = mapgradient(map,xy)
     dx_x0 = x - map.resolution*ix; %xfac
     dy_y0 = y - map.resolution*iy;
     
-    dx1_x =map.resolution*(ix+1) - x; %xfacInv
+    dx1_x = map.resolution*(ix+1) - x; %xfacInv
     dy1_y = map.resolution*(iy+1) - y;
     
 %     dmx = (dy_y0/map.resolution)*(p10 - p00) + (dy1_y/map.resolution)*(p11-p01);
 %     dmy = (dx_x0/map.resolution)*(p10 - p00) + (dx1_x/map.resolution)*(p11-p01);
     
 %recalculado
-    dmx = (dy_y0/map.resolution^2)*(p11 - p01) + (dy1_y/map.resolution^2)*(p10-p00);
-    dmy = (dx_x0/map.resolution^2)*(p11 - p10) + (dx1_x/map.resolution^2)*(p01-p00);
+    dmx = (dy_y0*map.scale2)*(p11 - p01) + (dy1_y*map.scale2)*(p10-p00);
+    dmy = (dx_x0*map.scale2)*(p11 - p10) + (dx1_x*map.scale2)*(p01-p00);
     
     dm = [dmx dmy];
     

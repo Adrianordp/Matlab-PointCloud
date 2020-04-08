@@ -7,17 +7,17 @@ n = length(cloud_xy);
 % cloud_tfed = (tf.R*cloud_xy' + tf.T)'; %transforma nuvem para coordenada grid
 % cloud_xy(:,2) = -cloud_xy(:,2)
 cloud_tfed = cloud_xy + [map.tfx map.tfy]; %transforma nuvem para coordenada grid
-ix0 = round((pose(1) + map.tfx)/ map.resolution) ;
-iy0 = round((pose(2) + map.tfy)/map.resolution) ;
+ix0 = fix((pose(1) + map.tfx)* map.scale) ;
+iy0 = fix((pose(2) + map.tfy)* map.scale) ;
 for i=1:n
 %     if(i==65)
 %        i 
 %     end
     % iy,ix -> ix (mapa ) ~ y (continuo) / iy (mapa) ~ x (continuo). PODE
     % MELHORAR ?
-    ix = round( (cloud_tfed(i,1))/map.resolution );
+    ix = round( (cloud_tfed(i,1))*map.scale);
 %     iy = fix( cloud_tfed(i,2)/map.resolution );
-    iy = round( (cloud_tfed(i,2))/map.resolution );
+    iy = round( (cloud_tfed(i,2))*map.scale);
     if(ix > map.size-1 || iy > map.size-1  || ix <= 0 || iy <= 0)
         
     else 

@@ -3,8 +3,8 @@ function occupancyValue = mapaccess(map,xy)
     y = xy(2) + map.tfx;
 
 % iy,ix -> ix (mapa ) ~ y (continuo) / iy (mapa) ~ x (continuo)
-    ix = fix( x/map.resolution );
-    iy = fix( y/map.resolution );
+    ix = fix( x*map.scale);
+    iy = fix( y*map.scale);
      if(ix > map.size-1 || iy > map.size-1  || ix <= 0 || iy <= 0)
         occupancyValue = 0;
         return;
@@ -15,7 +15,7 @@ function occupancyValue = mapaccess(map,xy)
 %     p10 = map.grid(ix+1,iy+1);
 %     p11 = map.grid(ix,iy+1);
 
-    %Ver anotações tablet
+    %Ver anotações tablet "Hecto scan match"
     p00 = getProb(map.grid(ix,iy)); %
     p10 = getProb(map.grid(ix+1,iy));
     p11 = getProb(map.grid(ix+1,iy+1));
@@ -30,8 +30,8 @@ function occupancyValue = mapaccess(map,xy)
     dy1_y = map.resolution*(iy+1) - y;
     
     %diferente do artigo devido ao incremento em y
-    occupancyValue = (dy1_y/map.resolution) * ( (dx1_x*p00)/map.resolution + (dx_x0*p10)/map.resolution) + ...
-                     (dy_y0/map.resolution) * ( (dx1_x*p01)/map.resolution + (dx_x0*p11)/map.resolution);
+    occupancyValue = (dy1_y*map.scale2) * ( (dx1_x*p00) + (dx_x0*p10) ) + ...
+                     (dy_y0*map.scale2) * ( (dx1_x*p01) + (dx_x0*p11) );
               
           
 %    figure
