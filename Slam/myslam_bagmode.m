@@ -1,26 +1,17 @@
 clear;close all;clc
+% Final pose my  | hector 
+%    0.5435       x: 0.556652069092
+%    -1.5385  y: -1.54119920731
+%    -4.7844
+
 % rosinit
 bag = rosbag('laser.bag');
 bagselect = select(bag,'topic','/cloud');
 lasermsgs = readMessages(bagselect);
-% return
-%% ROS STUFF
-
-% tftree = rostf
-% transfm = rosmessage('geometry_msgs/TransformStamped');
-% transfm.ChildFrameId = 'matlab_pose';
-% transfm.Header.FrameId = 'map';
-% transfm.Transform.Translation.X = 0;
-% transfm.Transform.Rotation.W = 1;
-% transfm.Transform.Rotation.X = 0;
-% transfm.Transform.Rotation.Y = 0;
-% transfm.Transform.Rotation.Z = 0;
-
-
 
 %% Map Specs
-map.resolution = 0.05;
-map.size = 300; %cells
+map.resolution = 0.1;
+map.size = 100; %cells
 disp('Map side length') ;
 disp(map.resolution*map.size);
 map.startx = 0.5; % 0 < x < 1
@@ -30,26 +21,30 @@ map.starty = 0.5; % 0 < y < 1
 map.tfx = map.startx*map.resolution*map.size;
 map.tfy = map.starty*map.resolution*map.size;
 map.grid = zeros(map.size);
+map.grid_index = -ones(map.size);
 map.updateOcc = 0.9;
 map.updateFree = 0.4;
 map.logOddOcc = log(map.updateOcc / (1 - map.updateOcc));
 map.logOddFree = log(map.updateFree / (1 - map.updateFree));
 
+map.currUpdateIndex = 0;
+map.currMarkFreeIndex = -1;
+map.currMarkOccIndex = -1;
 
 
 %% Loop
-lidar_read = rossubscriber('/cloud');
-first_cloud = false;
+% lidar_read = rossubscriber('/cloud');
+map_init = false;
 
 world_pose = [0 0 0]';
 last_mapupdate_pose = world_pose;
 
 % endpois
-total_msgs = size(lasermsgs,1)
+total_msgs = size(lasermsgs,1);
+init_map_scans = 10;
 for i=1:total_msgs
 %   cloud = receive(lidar_read);
    cloud = lasermsgs{i};
-  cloud_time = cloud.Header.Stamp;
   cloud_xyz = cloud.readXYZ;
   cloud_xy = cloud_xyz(:,1:2);
   
@@ -58,25 +53,30 @@ for i=1:total_msgs
   
   n = length(cloud_xy_filter);
   
-  if(~first_cloud)
-      first_cloud = true;
+  if(~map_init)
 %       map = registerCloud(map,cloud_xy_filter);
         map = registerCloudProbs(map,cloud_xy_filter,world_pose)
+        
     
-      plot(cloud_xy_filter(:,1),cloud_xy_filter(:,2),'.');
+        if i == init_map_scans
+            map_init = true;
+            plot(cloud_xy_filter(:,1),cloud_xy_filter(:,2),'.');
+%             plotmatrix(map.grid)
+        end
+      
 %       figure
-%       plotmatrix(map.grid)
+%       
       
   else 
       de = 0;
       H = zeros(3);
       dtr = zeros(3,1);
-      iterations = 5;
+      iterations = 3;
       estimate = world_pose;
       for it=1:iterations
          
-          for i=1:n
-          endpoint = cloud_xy_filter(i,:); %sensor reading
+          for j=1:n
+          endpoint = cloud_xy_filter(j,:); %sensor reading
           endpoint_tf = transform_endpoints(endpoint,estimate);
           %as duas funções abaixo podem ser uma só
           funval = 1 - mapaccess(map,endpoint_tf);
@@ -94,19 +94,8 @@ for i=1:total_msgs
              %normalize estimate(3)
       end
       world_pose = estimate
-      
-%          q = eul2quat([pose(3) 0 0]);
-%          transfm.Transform.Translation.X = pose(1);
-%          transfm.Transform.Translation.Y = pose(2);
-%          transfm.Transform.Rotation.W = q(1);
-%          transfm.Transform.Rotation.X = q(2);
-%          transfm.Transform.Rotation.Y = q(3);
-%          transfm.Transform.Rotation.Z = q(4);
-%          transfm.Header.Stamp = cloud_time;
-%          tftree.sendTransform(transfm);
-         
-         updist = sqrt ((last_mapupdate_pose(1:2) - world_pose(1:2))'*(last_mapupdate_pose(1:2) - world_pose(1:2)))
-         
+               
+         updist = sqrt ((last_mapupdate_pose(1:2) - world_pose(1:2))'*(last_mapupdate_pose(1:2) - world_pose(1:2)))       
          angleDiff = last_mapupdate_pose(3) - world_pose(3);
            if (angleDiff > pi)
             angleDiff = angleDiff - pi * 2.0;
@@ -115,9 +104,8 @@ for i=1:total_msgs
            end
           angdist = abs(angleDiff)
          % Preciso atualizar o angdist não em relação ao ultimo update, mas
-         % incrementalmente ?
          
-         if(updist > 0.3 || angdist > 0.06)
+         if(updist > 0.3 || angdist > 0.06) %Map Update
              cloud_t = transform_cloud(cloud_xy_filter,world_pose);
              figure(1)
              hold on
@@ -125,7 +113,6 @@ for i=1:total_msgs
              % usar probabilidade
              map = registerCloudProbs(map,cloud_t,world_pose)
              figure(2)
-             hold on
              plotmatrix(map.grid)
              last_mapupdate_pose = world_pose;
              drawnow

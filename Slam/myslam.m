@@ -67,7 +67,7 @@ while(1)
       de = 0;
       H = zeros(3);
       dtr = zeros(3,1);
-      iterations = 5;
+      iterations = 3;
       estimate = world_pose;
       for it=1:iterations
          
@@ -76,8 +76,8 @@ while(1)
           endpoint_tf = transform_endpoints(endpoint,estimate);
           %as duas funções abaixo podem ser uma só
           funval = 1 - mapaccess(map,endpoint_tf);
-          dm = mapgradient(map,endpoint_tf);
-          jac = model_deriv(endpoint,estimate);
+          dm = mapgradient(map,endpoint_tf); %1 x 2
+          jac = model_deriv(endpoint,estimate); % 2 x 3
 
           dtr = dtr + (dm*jac)'*funval; 
           H = H + (dm*jac)'*(dm*jac);
@@ -114,7 +114,7 @@ while(1)
          % incrementalmente ?
          
          if(updist > 0.3 || angdist > 0.06)
-             cloud_t = transform_cloud(cloud_xy_filter,world_pose);
+              cloud_t = transform_cloud(cloud_xy_filter,world_pose);
              figure(1)
              hold on
              plotcloud(cloud_t);
