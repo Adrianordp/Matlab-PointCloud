@@ -6,7 +6,7 @@ yc = (max(xy(:,2)) + min(xy(:,2)) )/2;
 angle = 0;
 
 % Define a reta y = xc + 0
-n = length(xy)
+n = length(xy);
 
 
 % e > 0 -> giro horário

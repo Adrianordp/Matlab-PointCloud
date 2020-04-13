@@ -11,9 +11,12 @@ x_c = (max(xy(:,1)) + min(xy(:,1)) )/2;
 y_c = (max(xy(:,2)) + min(xy(:,2)) )/2;
 
 % FUNCAO UTILITÁRIA
-% [xy_rot,angle] = h_align(xy); %Alinha com horizontal
+[xy_rot,angle] = h_align(xy); %Alinha com horizontal
+plotcloud(xy_rot,'blue')
+hold on
+plotcloud(xy,'red')
 
-
+return
 
 angle = -0.1931;% 0.188 ALINHADO
 R = [cos(angle) -sin(angle);sin(angle) cos(angle)]; %CW
